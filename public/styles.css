@@ -703,6 +703,18 @@ body.landing-mode .app {
     z-index: 2;
 }
 
+/* Raise input on mobile */
+@media (max-width: 768px) {
+    .input-area {
+        padding: 12px 0 16px;
+        margin-bottom: 0;
+    }
+
+    .quick-actions {
+        padding: 12px 0 8px;
+    }
+}
+
 .input-container {
     display: flex;
     align-items: center;
@@ -878,19 +890,15 @@ body.landing-mode .app {
     }
 
     .quick-buttons {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        padding-bottom: 8px;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .quick-buttons::-webkit-scrollbar {
-        display: none;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 6px;
     }
 
     .quick-btn {
-        flex-shrink: 0;
+        flex: 0 0 auto;
+        font-size: 13px;
+        padding: 8px 14px;
     }
 }
 
