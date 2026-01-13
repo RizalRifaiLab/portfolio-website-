@@ -6,9 +6,9 @@ console.log("Script starting...");
 
 // ===== IMAGE PATHS =====
 const images = {
-    profile: 'assets/images/profile.png',
-    mapJakarta: 'assets/images/map_jakarta.png',
-    friends: 'assets/images/friends.png'
+    profile: '/assets/images/profile.png',
+    mapJakarta: '/assets/images/map_jakarta.png',
+    friends: '/assets/images/friends.png'
 };
 
 // ===== PORTFOLIO CONTEXT FOR AI =====
