@@ -623,7 +623,7 @@ body.landing-mode .app {
     flex-shrink: 0;
     background: transparent;
     position: relative;
-    z-index: 2;
+    z-index: 10;
 }
 
 .quick-actions-header {
@@ -700,18 +700,61 @@ body.landing-mode .app {
     flex-shrink: 0;
     background: transparent;
     position: relative;
-    z-index: 2;
+    z-index: 10;
 }
 
 /* Raise input on mobile */
 @media (max-width: 768px) {
     .input-area {
-        padding: 12px 0 16px;
+        padding: 8px 0;
         margin-bottom: 0;
+        /* REMOVED: transform: translateY(-30px); */
+        z-index: 10;
+        background: var(--color-bg);
+        /* Added background to prevent avatar bleed through */
     }
 
     .quick-actions {
-        padding: 12px 0 8px;
+        padding: 8px 0;
+        margin-bottom: 0;
+        /* REMOVED: transform: translateY(-60px); */
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* In landing mode, ensure sections stack with proper spacing instead of overlapping */
+    .landing-mode .input-area {
+        padding-bottom: 20px;
+        /* REMOVED: transform: translateY(-120px); */
+    }
+
+    .landing-mode .quick-actions {
+        /* REMOVED: transform: translateY(-120px); */
+        margin-top: auto;
+        /* Pushes the actions towards the bottom */
+    }
+
+    /* Adjust the main app container for mobile */
+    .app {
+        padding-bottom: 10px !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        /* Keeps items at bottom on landing */
+    }
+
+    .hero-section {
+        flex: 1;
+        /* Allows hero to take up available space and push UI down */
+        justify-content: center;
+    }
+}
+
+/* Also remove the transform in this specific block further down your CSS */
+@media (max-height: 800px) {
+    .quick-actions {
+        padding: 12px 0;
+        transform: none !important;
+        /* Force remove transform */
     }
 }
 
@@ -886,7 +929,18 @@ body.landing-mode .app {
     }
 
     .hero-title {
-        font-size: 2rem;
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        font-weight: 400;
+    }
+
+    .hero-content {
+        padding: 0 16px;
     }
 
     .quick-buttons {
@@ -897,8 +951,50 @@ body.landing-mode .app {
 
     .quick-btn {
         flex: 0 0 auto;
-        font-size: 13px;
-        padding: 8px 14px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .quick-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .quick-actions-header span {
+        font-size: 12px;
+    }
+
+    .toggle-questions {
+        font-size: 12px;
+    }
+
+    .input-hint {
+        font-size: 11px;
+    }
+
+    .chat-input {
+        font-size: 14px;
+    }
+
+    /* FIX: Constrain chat container on mobile to leave space for quick actions */
+    .chat-container {
+        max-height: calc(100vh - 280px);
+        flex: 0 1 auto;
+        padding: 16px 0;
+    }
+
+    /* Ensure app has proper height distribution */
+    body:not(.landing-mode) .app {
+        display: flex;
+        flex-direction: column;
+        height: 65vh;
+        min-height: 500px;
+    }
+
+    /* Tighter spacing in landing mode */
+    .landing-mode .app {
+        padding-top: 5vh !important;
+        padding-bottom: 20px !important;
     }
 }
 
@@ -949,6 +1045,7 @@ body.landing-mode .app {
 
     .quick-actions {
         padding: 12px 0;
+        transform: translateY(-60px);
     }
 
     .quick-actions-header {
