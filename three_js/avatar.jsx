@@ -13,7 +13,7 @@ function Boy(props) {
     const [isIntroAnimationDone, setIsIntroAnimationDone] = useState(false);
 
     // Load the model ONCE
-    const { scene, materials } = useGLTF("public/models/boy-transformed.glb");
+    const { scene, materials } = useGLTF("/models/boy-transformed.glb");
 
     // Clone the entire scene properly to preserve skeleton hierarchy
     const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -305,7 +305,7 @@ function Boy(props) {
 }
 
 // Preload the model for faster initial load
-useGLTF.preload("public/models/boy-transformed.glb");
+useGLTF.preload("/models/boy-transformed.glb");
 
 // --------------------------------------------------------
 // Main Scene Component with Performance Optimizations
