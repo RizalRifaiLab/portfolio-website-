@@ -1,16 +1,44 @@
-export default async function handler(req, res) {
+// Enable CORS
+export const config = {
+    runtime: 'edge',
+};
+
+export default async function handler(req) {
+    // Add CORS headers
+    const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+    };
+
+    // Handle OPTIONS request for CORS preflight
+    if (req.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 200,
+            headers: corsHeaders,
+        });
+    }
+
     // Only allow POST requests
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+            status: 405,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     }
 
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
     if (!GROQ_API_KEY) {
-        return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
+        console.error('GROQ_API_KEY not configured');
+        return new Response(JSON.stringify({ error: 'GROQ_API_KEY not configured' }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     }
 
     try {
+        const body = await req.json();
         console.log('Forwarding to Groq API...');
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -19,16 +47,21 @@ export default async function handler(req, res) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${GROQ_API_KEY}`
             },
-            body: JSON.stringify(req.body)
+            body: JSON.stringify(body)
         });
 
         const data = await response.json();
-
         console.log('Groq Response Status:', response.status);
 
-        return res.status(response.status).json(data);
+        return new Response(JSON.stringify(data), {
+            status: response.status,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     } catch (error) {
         console.error('API Error:', error);
-        return res.status(500).json({ error: 'Failed to fetch from Groq API' });
+        return new Response(JSON.stringify({ error: 'Failed to fetch from Groq API', details: error.message }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     }
 }
