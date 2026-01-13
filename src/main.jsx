@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './portfolio-script.js'; // Import portfolio chat logic
 
 const rootElement = document.getElementById('avatar-3d-container');
 let avatarLoaded = false;
