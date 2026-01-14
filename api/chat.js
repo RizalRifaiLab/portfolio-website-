@@ -27,11 +27,11 @@ export default async function handler(req) {
         });
     }
 
-    const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-    if (!GROQ_API_KEY) {
-        console.error('GROQ_API_KEY not configured');
-        return new Response(JSON.stringify({ error: 'GROQ_API_KEY not configured' }), {
+    if (!OPENROUTER_API_KEY) {
+        console.error('OPENROUTER_API_KEY not configured');
+        return new Response(JSON.stringify({ error: 'OPENROUTER_API_KEY not configured' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -39,19 +39,20 @@ export default async function handler(req) {
 
     try {
         const body = await req.json();
-        console.log('Forwarding to Groq API...');
+        console.log('Forwarding to OpenRouter API...');
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${GROQ_API_KEY}`
+                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                'HTTP-Referer': 'https://your-portfolio-website.com',
             },
             body: JSON.stringify(body)
         });
 
         const data = await response.json();
-        console.log('Groq Response Status:', response.status);
+        console.log('OpenRouter Response Status:', response.status);
 
         return new Response(JSON.stringify(data), {
             status: response.status,

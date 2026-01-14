@@ -6,7 +6,7 @@ const https = require('https');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3000;
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 const MIME_TYPES = {
     '.html': 'text/html',
@@ -33,19 +33,20 @@ const server = http.createServer((req, res) => {
         });
 
         req.on('end', () => {
-            console.log('Forwarding to Groq:', body);
-            const proxyReq = https.request('https://api.groq.com/openai/v1/chat/completions', {
+            console.log('Forwarding to OpenRouter:', body);
+            const proxyReq = https.request('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                    'HTTP-Referer': 'http://localhost:3000'
                 }
             }, (proxyRes) => {
-                console.log('Groq Response Status:', proxyRes.statusCode);
+                console.log('OpenRouter Response Status:', proxyRes.statusCode);
                 let data = '';
                 proxyRes.on('data', chunk => data += chunk);
                 proxyRes.on('end', () => {
-                    console.log('Groq Response Body:', data);
+                    console.log('OpenRouter Response Body:', data);
                     res.writeHead(proxyRes.statusCode, { 'Content-Type': 'application/json' });
                     res.end(data);
                 });
@@ -63,11 +64,11 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // Serve Static Files
+    // Serve Static Files from dist folder
     // Remove query parameters for file path resolution
     const cleanUrl = req.url.split('?')[0];
-    let filePath = '.' + cleanUrl;
-    if (filePath === './') filePath = './index.html';
+    let filePath = './dist' + cleanUrl;
+    if (filePath === './dist/') filePath = './dist/index.html';
 
     const extname = path.extname(filePath);
     const contentType = MIME_TYPES[extname] || 'application/octet-stream';
