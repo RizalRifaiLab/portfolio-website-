@@ -4,7 +4,7 @@ export const config = {
 };
 
 // ===== TEST MODE: Set to true to simulate all providers failing =====
-const TEST_FALLBACK_MODE = true;
+const TEST_FALLBACK_MODE = false;
 
 // API Provider configurations
 const PROVIDERS = {
