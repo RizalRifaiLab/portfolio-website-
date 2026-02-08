@@ -129,7 +129,8 @@ const fallbackResponses = {
     skills: "My technical skills include:\n• **Languages:** Python (Advanced), Java, SQL, JavaScript, Golang\n• **Backend:** Spring Boot, PostgreSQL, REST APIs, ETL\n• **ML/AI:** TensorFlow, PyTorch, Keras, OpenCV\n• **DevOps:** Docker, Kubernetes, Kubeflow",
     projects: `I've worked on some exciting projects:\n\n• **AIL System** - Large-scale document management handling 68M+ documents with 100K-200K daily transactions\n\n• **MLOps Pipeline** - Automated ML training, versioning (DVC), and deployment (Kubeflow)\n\n• **Computer Vision Tool** - End-to-end ML software for object detection and segmentation, accelerating annotation by 5x`,
     contact: `You can reach me via the buttons below:\n\nI'm based in Jakarta, Indonesia:\n![Jakarta Map](${images.mapJakarta})\n\n[CONTACT_BUTTONS]`,
-    fallback: "Sorry, I think the model limit has been reached. If your question is not covered by the quick questions, feel free to reach me via my contact info."
+    fallback: `Hey! 👋 My AI assistant seems to be taking a coffee break right now, but I'm the real deal anyway!\n\nFeel free to use the **Quick Questions** below for instant info about me, or better yet—just drop me a message directly! I'd love to hear from you and usually reply within 24 hours.\n\n[CONTACT_BUTTONS]`,
+    rateLimit: `Oops! 😅 Looks like my AI buddy got a bit overwhelmed with all the questions. It happens when too many people are chatting at once!\n\nBut hey, no worries—you can still:\n• Check out the **Quick Questions** below (they work anytime!)\n• Or just message me directly! I promise I'm friendlier than the AI 😄\n\n[CONTACT_BUTTONS]`
 };
 
 // ===== FUNCTIONS =====
@@ -151,7 +152,7 @@ async function callGroqAPI(userMessage) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: "google/gemma-3-27b-it:free",
+                model: "llama-3.3-70b-versatile",
                 messages: [
                     { role: "system", content: portfolioContext },
                     { role: "user", content: userMessage }
@@ -162,7 +163,17 @@ async function callGroqAPI(userMessage) {
             })
         });
 
-        if (!response.ok) throw new Error('API error: ' + response.status);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+
+            // Check for rate limit errors (429 status or specific error messages)
+            if (response.status === 429 || errorData.error?.message?.includes('quota') || errorData.error?.message?.includes('rate limit')) {
+                throw new Error('RATE_LIMIT');
+            }
+
+            console.error('API Error:', response.status, errorData);
+            throw new Error('API error: ' + response.status);
+        }
 
         const data = await response.json();
         if (data.choices && data.choices[0] && data.choices[0].message) {
@@ -172,6 +183,10 @@ async function callGroqAPI(userMessage) {
         }
     } catch (error) {
         console.error('Groq API error:', error);
+        // Return specific error type for rate limits
+        if (error.message === 'RATE_LIMIT') {
+            return 'RATE_LIMIT_ERROR';
+        }
         return null;
     }
 }
@@ -270,10 +285,14 @@ async function processInput(input) {
     // Try Groq API first
     let response = await callGroqAPI(input);
 
-    // If API fails, use fallback
+    // If API fails, use appropriate fallback
     if (!response) {
         console.log('Using fallback response');
         response = getFallbackResponse(input);
+    } else if (response === 'RATE_LIMIT_ERROR') {
+        // Show specific rate limit message
+        console.log('Rate limit hit');
+        response = fallbackResponses.rateLimit;
     }
 
     // Remove typing indicator and show response

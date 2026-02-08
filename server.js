@@ -6,7 +6,7 @@ const https = require('https');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3000;
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 const MIME_TYPES = {
     '.html': 'text/html',
@@ -33,33 +33,43 @@ const server = http.createServer((req, res) => {
         });
 
         req.on('end', () => {
-            console.log('Forwarding to OpenRouter:', body);
-            const proxyReq = https.request('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                    'HTTP-Referer': 'http://localhost:3000'
-                }
-            }, (proxyRes) => {
-                console.log('OpenRouter Response Status:', proxyRes.statusCode);
-                let data = '';
-                proxyRes.on('data', chunk => data += chunk);
-                proxyRes.on('end', () => {
-                    console.log('OpenRouter Response Body:', data);
-                    res.writeHead(proxyRes.statusCode, { 'Content-Type': 'application/json' });
-                    res.end(data);
+            console.log('Forwarding to Groq API...');
+
+            try {
+                const requestBody = JSON.parse(body);
+                const groqBody = JSON.stringify(requestBody);
+
+                const proxyReq = https.request('https://api.groq.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(groqBody)
+                    }
+                }, (proxyRes) => {
+                    console.log('Groq API Response Status:', proxyRes.statusCode);
+                    let data = '';
+                    proxyRes.on('data', chunk => data += chunk);
+                    proxyRes.on('end', () => {
+                        console.log('Groq API Response received');
+                        res.writeHead(proxyRes.statusCode, { 'Content-Type': 'application/json' });
+                        res.end(data);
+                    });
                 });
-            });
 
-            proxyReq.on('error', (e) => {
-                console.error('Proxy Error:', e);
+                proxyReq.on('error', (e) => {
+                    console.error('Proxy Error:', e);
+                    res.writeHead(500);
+                    res.end(JSON.stringify({ error: 'Proxy error', details: e.message }));
+                });
+
+                proxyReq.write(groqBody);
+                proxyReq.end();
+            } catch (e) {
+                console.error('Request parsing error:', e);
                 res.writeHead(500);
-                res.end(JSON.stringify({ error: 'Proxy error' }));
-            });
-
-            proxyReq.write(body);
-            proxyReq.end();
+                res.end(JSON.stringify({ error: 'Invalid request format' }));
+            }
         });
         return;
     }
