@@ -359,6 +359,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Download CV button - show welcoming message
+    const downloadCvBtn = document.getElementById('download-cv-btn');
+    if (downloadCvBtn) {
+        downloadCvBtn.addEventListener('click', function () {
+            // Transition to chat mode
+            if (document.body.classList.contains('landing-mode')) {
+                document.body.classList.remove('landing-mode');
+                window.dispatchEvent(new Event('resize'));
+            }
+            // Show welcoming message after a brief delay for the download
+            setTimeout(() => {
+                const cvMessage = `Thanks for downloading my CV! 🎉 I'm glad you're interested in knowing me.\n\nFeel free to ask me anything about my experience, projects, or skills. I'd love to chat with you!\n\n[CONTACT_BUTTONS]`;
+                addMessage(cvMessage, false);
+            }, 500);
+        });
+    }
+
     if (toggleQuestionsBtn && quickButtonsContainer) {
         let questionsVisible = true;
         toggleQuestionsBtn.addEventListener('click', function () {
